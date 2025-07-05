@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Save, DollarSign, Globe, Calendar, Palette, Download, Trash2, AlertTriangle, Mail, Key } from 'lucide-react';
 import { storageUtils } from '../../utils/storage';
 import { updateEmailConfiguration, validateEmailConfiguration } from '../../utils/emailService';
+import SEO from '../SEO';
 
 const Settings: React.FC = () => {
   const [settings, setSettings] = useState({
@@ -107,6 +108,27 @@ const Settings: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <SEO
+        title="Settings | InvoicePro by Dovepeak Digital Solutions"
+        description="Configure your invoice, tax, and email settings for optimal business performance. Powered by Dovepeak Digital Solutions."
+        canonical={typeof window !== 'undefined' ? window.location.href : ''}
+        keywords="invoice settings, tax settings, email configuration, InvoicePro, Dovepeak Digital Solutions"
+        image="/logo192.png"
+        type="settings"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          'name': 'InvoicePro',
+          'url': 'https://yourdomain.com',
+          'applicationCategory': 'BusinessApplication',
+          'creator': {
+            '@type': 'Organization',
+            'name': 'Dovepeak Digital Solutions',
+            'url': 'https://dovepeak.com',
+          },
+          'description': 'Settings and configuration for InvoicePro.'
+        }}
+      />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Enhanced Header */}

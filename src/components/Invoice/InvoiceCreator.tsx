@@ -7,6 +7,7 @@ import { generateInvoiceNumber, calculateInvoiceTotals } from '../../utils/invoi
 import { generateInvoicePDF } from '../../utils/pdfGenerator';
 import InvoiceTemplate from './InvoiceTemplates';
 import EmailModal from './EmailModal';
+import SEO from '../SEO';
 
 const InvoiceCreator: React.FC = () => {
   const navigate = useNavigate();
@@ -307,6 +308,24 @@ const InvoiceCreator: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <SEO
+          title="Create Invoice | InvoicePro"
+          description="Easily create and customize professional invoices for your business clients. Download, preview, and send invoices with InvoicePro."
+          canonical={typeof window !== 'undefined' ? window.location.href : ''}
+          keywords="create invoice, invoice generator, business billing, PDF invoice, InvoicePro"
+          image="/logo192.png"
+          type="article"
+          structuredData={{
+            '@context': 'https://schema.org',
+            '@type': 'Invoice',
+            'description': 'Create and download professional invoices for your business clients.',
+            'provider': {
+              '@type': 'Organization',
+              'name': 'InvoicePro',
+              'url': 'https://yourdomain.com',
+            },
+          }}
+        />
         <div className="space-y-8">
           {/* Enhanced Header */}
           <div className="bg-white rounded-xl shadow-lg p-6">

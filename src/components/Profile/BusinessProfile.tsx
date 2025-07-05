@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Camera, Save, Plus, Edit, Trash2, Building2, Mail, Phone, MapPin, Globe, Hash } from 'lucide-react';
 import { BusinessProfile } from '../../types';
 import { storageUtils } from '../../utils/storage';
+import SEO from '../SEO';
 
 const BusinessProfileComponent: React.FC = () => {
   const [profiles, setProfiles] = useState<BusinessProfile[]>([]);
@@ -149,6 +150,23 @@ const BusinessProfileComponent: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <SEO
+        title="Business Profile | InvoicePro by Dovepeak Digital Solutions"
+        description="Manage your business profile, branding, and contact details for professional invoicing. Powered by Dovepeak Digital Solutions."
+        canonical={typeof window !== 'undefined' ? window.location.href : ''}
+        keywords="business profile, company branding, invoice settings, InvoicePro, Dovepeak Digital Solutions"
+        image="/logo192.png"
+        type="profile"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'Organization',
+          'name': formData.name || 'InvoicePro',
+          'url': 'https://yourdomain.com',
+          'email': formData.email || '',
+          'logo': formData.logo || '/logo192.png',
+          'description': 'Business profile management for invoicing.'
+        }}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Enhanced Header */}

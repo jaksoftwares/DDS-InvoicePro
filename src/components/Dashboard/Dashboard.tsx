@@ -5,6 +5,7 @@ import { Invoice } from '../../types';
 import { storageUtils } from '../../utils/storage';
 import { formatCurrency, getStatusColor, getStatusIcon } from '../../utils/invoiceHelpers';
 import { format } from 'date-fns';
+import SEO from '../SEO';
 
 const Dashboard: React.FC = () => {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
@@ -103,6 +104,27 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
+      <SEO
+        title="Dashboard | InvoicePro by Dovepeak Digital Solutions"
+        description="View, manage, and track all your business invoices in one place. Analyze revenue, status, and client activity with InvoicePro by Dovepeak Digital Solutions."
+        canonical={typeof window !== 'undefined' ? window.location.href : ''}
+        keywords="invoice dashboard, manage invoices, business analytics, InvoicePro, Dovepeak Digital Solutions"
+        image="/logo192.png"
+        type="website"
+        structuredData={{
+          '@context': 'https://schema.org',
+          '@type': 'WebApplication',
+          'name': 'InvoicePro',
+          'url': 'https://yourdomain.com',
+          'applicationCategory': 'BusinessApplication',
+          'creator': {
+            '@type': 'Organization',
+            'name': 'Dovepeak Digital Solutions',
+            'url': 'https://dovepeak.com',
+          },
+          'description': 'Business invoice management and analytics dashboard.'
+        }}
+      />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         <div className="space-y-8">
           {/* Enhanced Header */}
