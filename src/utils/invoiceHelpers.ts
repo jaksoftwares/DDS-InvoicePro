@@ -71,3 +71,19 @@ export const getStatusIcon = (status: Invoice['status']): string => {
       return '📝';
   }
 };
+
+export const getCurrencySymbol = (currency: string): string => {
+  switch (currency) {
+    case 'USD': return '$';
+    case 'EUR': return '€';
+    case 'GBP': return '£';
+    case 'JPY': return '¥';
+    case 'CAD': return 'C$';
+    case 'AUD': return 'A$';
+    case 'CHF': return 'CHF';
+    case 'CNY': return '¥';
+    case 'INR': return '₹';
+    case 'KES': return 'KSh';
+    default: return currency;
+  }
+};

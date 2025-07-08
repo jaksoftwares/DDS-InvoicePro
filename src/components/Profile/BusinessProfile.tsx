@@ -57,8 +57,10 @@ const BusinessProfileComponent: React.FC = () => {
       return;
     }
 
+    // Always generate a new id for new profiles
+    const isNew = !formData.id;
     const profileData: BusinessProfile = {
-      id: currentProfile?.id || Date.now().toString(),
+      id: isNew ? Date.now().toString() : (formData.id as string),
       name: formData.name!,
       email: formData.email!,
       phone: formData.phone || '',
@@ -70,7 +72,7 @@ const BusinessProfileComponent: React.FC = () => {
       website: formData.website || '',
       taxNumber: formData.taxNumber || '',
       logo: formData.logo || '',
-      createdAt: currentProfile?.createdAt || new Date(),
+      createdAt: isNew ? new Date() : (formData.createdAt || new Date()),
       updatedAt: new Date(),
     };
 
