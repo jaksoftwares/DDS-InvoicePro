@@ -3,10 +3,11 @@ import { Save, DollarSign, Globe, Calendar, Palette, Download, Trash2, AlertTria
 import { storageUtils } from '../../utils/storage';
 import { updateEmailConfiguration, validateEmailConfiguration } from '../../utils/emailService';
 import SEO from '../SEO';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const Settings: React.FC = () => {
+  const { currency, setCurrency } = useCurrency();
   const [settings, setSettings] = useState({
-    currency: 'USD',
     taxRate: 0,
     language: 'en',
     dateFormat: 'MM/dd/yyyy',
@@ -14,6 +15,7 @@ const Settings: React.FC = () => {
     defaultDueDays: 30,
     defaultNotes: '',
     defaultTerms: '',
+    currency: 'USD', // Added currency property to settings state
   });
 
   const [emailSettings, setEmailSettings] = useState({
@@ -28,6 +30,7 @@ const Settings: React.FC = () => {
   useEffect(() => {
     const savedSettings = storageUtils.getSettings();
     setSettings(prev => ({ ...prev, ...savedSettings }));
+    setCurrency(savedSettings.currency || 'USD');
 
     // Load email settings if they exist
     const savedEmailSettings = localStorage.getItem('email_settings');
@@ -39,6 +42,7 @@ const Settings: React.FC = () => {
   const handleSave = () => {
     setIsSaving(true);
     storageUtils.saveSettings(settings);
+    setCurrency(settings.currency);
     
     // Save email settings
     localStorage.setItem('email_settings', JSON.stringify(emailSettings));

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, Link } from 'react-router-dom';
 import { Plus, Trash2, Save, Eye, Download, Calendar, DollarSign, Building2, Palette, Mail } from 'lucide-react';
 import { Invoice, InvoiceItem, BusinessProfile } from '../../types';
 import { storageUtils } from '../../utils/storage';
@@ -8,6 +8,7 @@ import { generateInvoicePDF } from '../../utils/pdfGenerator';
 import InvoiceTemplate from './InvoiceTemplates';
 import EmailModal from './EmailModal';
 import SEO from '../SEO';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const InvoiceCreator: React.FC = () => {
   const navigate = useNavigate();
@@ -45,6 +46,8 @@ const InvoiceCreator: React.FC = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  const { currency, setCurrency } = useCurrency();
+
   const templateOptions = [
     { id: 'modern', name: 'Modern', description: 'Clean gradient design with professional layout' },
     { id: 'classic', name: 'Classic', description: 'Traditional formal invoice with elegant borders' },
@@ -78,7 +81,7 @@ const InvoiceCreator: React.FC = () => {
       const settings = storageUtils.getSettings();
       setInvoice(prev => ({
         ...prev,
-        currency: settings.currency || 'USD',
+        currency: currency || settings.currency || 'USD',
         taxRate: settings.taxRate || 0,
         template: settings.defaultTemplate || 'modern',
         notes: settings.defaultNotes || '',
@@ -88,7 +91,7 @@ const InvoiceCreator: React.FC = () => {
     };
 
     loadData();
-  }, [isEditing, id]);
+  }, [isEditing, id, currency]);
 
   const addItem = () => {
     const newItem: InvoiceItem = {
@@ -378,59 +381,28 @@ const InvoiceCreator: React.FC = () => {
             {/* Form Section */}
             <div className="space-y-6">
               {/* Business Profile Selection */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
-                <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
-                  <Building2 className="h-5 w-5 mr-2 text-blue-600" />
-                  Business Profile
-                </h3>
-                {businessProfiles.length === 0 ? (
-                  <div className="text-center py-8">
-                    <Building2 className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-                    <p className="text-gray-600 mb-4">No business profiles found</p>
-                    <button
-                      onClick={() => navigate('/profile')}
-                      className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700"
-                    >
-                      Create Business Profile
-                    </button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <select
-                      value={selectedProfile?.id || ''}
-                      onChange={(e) => {
-                        const profile = businessProfiles.find(p => p.id === e.target.value);
-                        setSelectedProfile(profile || null);
-                      }}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                    >
-                      <option value="">Select a business profile</option>
-                      {businessProfiles.map((profile) => (
-                        <option key={profile.id} value={profile.id}>
-                          {profile.name} - {profile.email}
-                        </option>
-                      ))}
-                    </select>
-                    
-                    {selectedProfile && (
-                      <div className="bg-blue-50 p-4 rounded-lg">
-                        <div className="flex items-center space-x-3">
-                          {selectedProfile.logo && (
-                            <img
-                              src={selectedProfile.logo}
-                              alt="Business Logo"
-                              className="h-12 w-12 object-cover rounded-lg"
-                            />
-                          )}
-                          <div>
-                            <p className="font-medium text-gray-900">{selectedProfile.name}</p>
-                            <p className="text-sm text-gray-600">{selectedProfile.email}</p>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+              <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+                <h3 className="text-lg font-semibold text-gray-900 mb-4">Select Business Profile</h3>
+                <select
+                  value={selectedProfile?.id || ''}
+                  onChange={e => {
+                    const profile = businessProfiles.find(p => p.id === e.target.value);
+                    if (profile) setSelectedProfile(profile);
+                  }}
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 mb-4"
+                >
+                  <option value="" disabled>Select a business profile</option>
+                  {businessProfiles.map(profile => (
+                    <option key={profile.id} value={profile.id}>{profile.name} ({profile.email})</option>
+                  ))}
+                </select>
+                <Link
+                  to="/profile"
+                  className="inline-flex items-center px-4 py-2 border border-blue-600 text-blue-700 font-semibold rounded-lg shadow-sm hover:bg-blue-50 transition-colors"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add New Business Profile
+                </Link>
               </div>
 
               {/* Invoice Details */}
@@ -499,8 +471,11 @@ const InvoiceCreator: React.FC = () => {
                       Currency
                     </label>
                     <select
-                      value={invoice.currency || 'USD'}
-                      onChange={(e) => setInvoice(prev => ({ ...prev, currency: e.target.value }))}
+                      value={invoice.currency || currency}
+                      onChange={(e) => {
+                        setInvoice(prev => ({ ...prev, currency: e.target.value }));
+                        setCurrency(e.target.value);
+                      }}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     >
                       <option value="USD">USD - US Dollar</option>

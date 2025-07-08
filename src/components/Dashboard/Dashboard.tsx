@@ -6,8 +6,10 @@ import { storageUtils } from '../../utils/storage';
 import { formatCurrency, getStatusColor, getStatusIcon } from '../../utils/invoiceHelpers';
 import { format } from 'date-fns';
 import SEO from '../SEO';
+import { useCurrency } from '../../context/CurrencyContext';
 
 const Dashboard: React.FC = () => {
+  const { currency } = useCurrency();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -159,7 +161,7 @@ const Dashboard: React.FC = () => {
             />
             <StatCard
               title="Total Revenue"
-              value={formatCurrency(stats.totalRevenue)}
+              value={formatCurrency(stats.totalRevenue, currency)}
               icon={DollarSign}
               color="bg-green-500"
               subtitle="Paid invoices"

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Invoice } from '../../types';
-import { formatCurrency } from '../../utils/invoiceHelpers';
+import { formatCurrency, getCurrencySymbol } from '../../utils/invoiceHelpers';
 import { format } from 'date-fns';
 
 interface InvoiceTemplateProps {
@@ -558,7 +558,7 @@ const ProfessionalTemplate: React.FC<{ invoice: Invoice }> = ({ invoice }) => (
     {/* Totals Section */}
     <div className="flex justify-end mb-8">
       <div className="w-full max-w-md">
-        <div className="bg-gray-50 border border-gray-300 rounded-lg overflow-hidden">
+        <div className="bg-gray-100 border border-gray-300 rounded-lg overflow-hidden">
           <div className="p-4 space-y-3">
             <div className="flex justify-between text-sm">
               <span className="font-medium text-gray-700">Subtotal:</span>
@@ -589,16 +589,16 @@ const ProfessionalTemplate: React.FC<{ invoice: Invoice }> = ({ invoice }) => (
 
     {/* Notes and Terms */}
     {(invoice.notes || invoice.terms) && (
-      <div className="space-y-6 border-t-2 border-gray-200 pt-6">
+      <div className="space-y-6 border-t-2 border-gray-900 pt-6">
         {invoice.notes && (
-          <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4">
-            <h4 className="text-sm font-bold text-yellow-800 mb-2">NOTES:</h4>
-            <p className="text-sm text-yellow-700 leading-relaxed">{invoice.notes}</p>
+          <div className="border-2 border-gray-300 p-4">
+            <h4 className="text-sm font-bold text-gray-900 mb-2 bg-gray-100 p-2 -m-4 mb-4">Notes:</h4>
+            <p className="text-sm text-gray-700 leading-relaxed">{invoice.notes}</p>
           </div>
         )}
         {invoice.terms && (
-          <div className="bg-gray-50 border-l-4 border-gray-400 p-4">
-            <h4 className="text-sm font-bold text-gray-800 mb-2">TERMS & CONDITIONS:</h4>
+          <div className="border-2 border-gray-300 p-4">
+            <h4 className="text-sm font-bold text-gray-900 mb-2 bg-gray-100 p-2 -m-4 mb-4">Terms & Conditions:</h4>
             <p className="text-sm text-gray-700 leading-relaxed">{invoice.terms}</p>
           </div>
         )}
@@ -741,13 +741,13 @@ const CorporateTemplate: React.FC<{ invoice: Invoice }> = ({ invoice }) => (
         {invoice.notes && (
           <div className="border border-gray-300 p-4">
             <h4 className="text-sm font-bold text-gray-900 mb-2 bg-gray-100 p-2 -m-4 mb-4">NOTES</h4>
-            <p className="text-sm text-gray-700 leading-relaxed mt-4">{invoice.notes}</p>
+            <p className="text-sm text-gray-700 leading-relaxed">{invoice.notes}</p>
           </div>
         )}
         {invoice.terms && (
           <div className="border border-gray-300 p-4">
             <h4 className="text-sm font-bold text-gray-900 mb-2 bg-gray-100 p-2 -m-4 mb-4">TERMS & CONDITIONS</h4>
-            <p className="text-sm text-gray-700 leading-relaxed mt-4">{invoice.terms}</p>
+            <p className="text-sm text-gray-700 leading-relaxed">{invoice.terms}</p>
           </div>
         )}
       </div>
@@ -1085,7 +1085,7 @@ const CreativeTemplate: React.FC<{ invoice: Invoice }> = ({ invoice }) => (
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl border-l-4 border-blue-400">
             <h4 className="text-lg font-bold text-blue-800 mb-3 flex items-center">
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
+                <path fillRule="evenodd" d="M4 4a2 2 0 002-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clipRule="evenodd" />
               </svg>
               Terms & Conditions
             </h4>

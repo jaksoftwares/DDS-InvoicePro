@@ -2,6 +2,7 @@ import jsPDF from 'jspdf';
 import html2canvas from 'html2canvas';
 import { Invoice } from '../types';
 import { format } from 'date-fns';
+import { getCurrencySymbol } from '../utils/invoiceHelpers';
 
 export const generateInvoicePDF = async (invoice: Invoice, elementId: string): Promise<void> => {
   const element = document.getElementById(elementId);
@@ -216,8 +217,8 @@ export const generateQuickPDF = (invoice: Invoice): void => {
     invoice.items.forEach((item) => {
       pdf.text(item.description, descX, y);
       pdf.text(item.quantity.toString(), qtyX, y, { align: 'center' });
-      pdf.text(`${invoice.currency} ${item.rate.toFixed(2)}`, rateX, y, { align: 'right' });
-      pdf.text(`${invoice.currency} ${item.amount.toFixed(2)}`, amtX, y, { align: 'right' });
+      pdf.text(`${getCurrencySymbol(invoice.currency)} ${item.rate.toFixed(2)}`, rateX, y, { align: 'right' });
+      pdf.text(`${getCurrencySymbol(invoice.currency)} ${item.amount.toFixed(2)}`, amtX, y, { align: 'right' });
       y += 10;
     });
     y += 6;
@@ -227,19 +228,19 @@ export const generateQuickPDF = (invoice: Invoice): void => {
     const totalsX2 = leftMargin + contentWidth * 0.5 + 2;
     pdf.setFont('helvetica', 'normal');
     pdf.setFontSize(13);
-    pdf.text(`Subtotal: ${invoice.currency} ${invoice.subtotal.toFixed(2)}`, totalsX2, y, { align: 'left' });
+    pdf.text(`Subtotal: ${getCurrencySymbol(invoice.currency)} ${invoice.subtotal.toFixed(2)}`, totalsX2, y, { align: 'left' });
     y += 8;
     if (invoice.discountAmount > 0) {
-      pdf.text(`Discount: ${invoice.currency} ${invoice.discountAmount.toFixed(2)}`, totalsX2, y, { align: 'left' });
+      pdf.text(`Discount: ${getCurrencySymbol(invoice.currency)} ${invoice.discountAmount.toFixed(2)}`, totalsX2, y, { align: 'left' });
       y += 8;
     }
     if (invoice.taxAmount > 0) {
-      pdf.text(`Tax: ${invoice.currency} ${invoice.taxAmount.toFixed(2)}`, totalsX2, y, { align: 'left' });
+      pdf.text(`Tax: ${getCurrencySymbol(invoice.currency)} ${invoice.taxAmount.toFixed(2)}`, totalsX2, y, { align: 'left' });
       y += 8;
     }
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(15);
-    pdf.text(`Total: ${invoice.currency} ${invoice.total.toFixed(2)}`, totalsX2, y, { align: 'left' });
+    pdf.text(`Total: ${getCurrencySymbol(invoice.currency)} ${invoice.total.toFixed(2)}`, totalsX2, y, { align: 'left' });
     pdf.setFontSize(12);
     y += 14;
     if (invoice.notes || invoice.terms) {
