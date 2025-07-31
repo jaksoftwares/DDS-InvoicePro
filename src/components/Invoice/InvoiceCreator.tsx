@@ -308,6 +308,9 @@ const InvoiceCreator: React.FC = () => {
     };
   };
 
+  // Helper for input fallback
+  const getInputValue = (val: number | undefined) => (val === undefined || val === null) ? '' : val;
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -669,8 +672,11 @@ const InvoiceCreator: React.FC = () => {
                         </label>
                         <input
                           type="number"
-                          value={item.quantity}
-                          onChange={(e) => updateItem(item.id, 'quantity', parseFloat(e.target.value) || 0)}
+                          value={getInputValue(item.quantity)}
+                          placeholder="1"
+                          onFocus={e => e.target.select()}
+                          onChange={e => updateItem(item.id, 'quantity', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                          min={0}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
@@ -681,8 +687,11 @@ const InvoiceCreator: React.FC = () => {
                         </label>
                         <input
                           type="number"
-                          value={item.rate}
-                          onChange={(e) => updateItem(item.id, 'rate', parseFloat(e.target.value) || 0)}
+                          value={getInputValue(item.rate)}
+                          placeholder="0"
+                          onFocus={e => e.target.select()}
+                          onChange={e => updateItem(item.id, 'rate', e.target.value === '' ? '' : parseFloat(e.target.value))}
+                          min={0}
                           className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                         />
                       </div>
@@ -692,10 +701,11 @@ const InvoiceCreator: React.FC = () => {
                           Amount
                         </label>
                         <input
-                          type="number"
-                          value={item.amount}
+                          type="text"
+                          value={item.amount !== undefined && item.amount !== null ? item.amount : ''}
                           readOnly
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg shadow-sm bg-gray-100 text-right font-mono text-base overflow-x-auto"
+                          style={{ minWidth: 0, width: '100%' }}
                         />
                       </div>
 
@@ -722,8 +732,10 @@ const InvoiceCreator: React.FC = () => {
                     </label>
                     <input
                       type="number"
-                      value={invoice.taxRate || 0}
-                      onChange={(e) => setInvoice(prev => ({ ...prev, taxRate: parseFloat(e.target.value) || 0 }))}
+                      value={invoice.taxRate === undefined || invoice.taxRate === null ? '' : invoice.taxRate}
+                      placeholder="0"
+                      onFocus={e => e.target.select()}
+                      onChange={(e) => setInvoice(prev => ({ ...prev, taxRate: e.target.value === '' ? 0 : parseFloat(e.target.value) }))}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -734,8 +746,10 @@ const InvoiceCreator: React.FC = () => {
                     </label>
                     <input
                       type="number"
-                      value={invoice.discountRate || 0}
-                      onChange={(e) => setInvoice(prev => ({ ...prev, discountRate: parseFloat(e.target.value) || 0 }))}
+                      value={invoice.discountRate === undefined || invoice.discountRate === null ? '' : invoice.discountRate}
+                      placeholder="0"
+                      onFocus={e => e.target.select()}
+                      onChange={(e) => setInvoice(prev => ({ ...prev, discountRate: e.target.value === '' ? 0 : parseFloat(e.target.value) }))}
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                     />
                   </div>
@@ -797,6 +811,27 @@ const InvoiceCreator: React.FC = () => {
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Bottom Action Buttons */}
+              <div className="flex flex-col md:flex-row gap-4 justify-end mt-8">
+                <button
+                  type="button"
+                  onClick={() => setShowPreview(!showPreview)}
+                  className="inline-flex items-center px-6 py-3 border border-gray-300 rounded-lg shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors"
+                >
+                  <Eye className="h-4 w-4 mr-2" />
+                  {showPreview ? 'Hide Preview' : 'Preview'}
+                </button>
+                <button
+                  type="button"
+                  onClick={handleSave}
+                  disabled={isSaving}
+                  className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 transition-colors"
+                >
+                  <Save className="h-4 w-4 mr-2" />
+                  {isSaving ? 'Saving...' : 'Save Invoice'}
+                </button>
               </div>
             </div>
 
