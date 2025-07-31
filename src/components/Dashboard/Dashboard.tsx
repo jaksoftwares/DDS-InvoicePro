@@ -334,7 +334,7 @@ const Dashboard: React.FC = () => {
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
                             <button
-                              onClick={() => {/* View functionality */}}
+                              onClick={() => navigate(`/invoice/${invoice.id}`)}
                               className="text-blue-600 hover:text-blue-900 transition-colors p-1 rounded"
                               title="View Invoice"
                             >

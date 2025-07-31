@@ -5,6 +5,7 @@ import { AuthProvider } from './context/AuthContext';
 import Layout from './components/Layout/Layout';
 import Dashboard from './components/Dashboard/Dashboard';
 import InvoiceCreator from './components/Invoice/InvoiceCreator';
+import InvoiceView from './components/Invoice/InvoiceView';
 import BusinessProfile from './components/Profile/BusinessProfile';
 import Settings from './components/Settings/Settings';
 import { LandingPage } from './components/LandingPage';
@@ -46,6 +47,14 @@ function App() {
                 element={
                   <ProtectedRoute>
                     <Layout><InvoiceCreator /></Layout>
+                  </ProtectedRoute>
+                }
+              />
+              <Route
+                path="/invoice/:id"
+                element={
+                  <ProtectedRoute>
+                    <Layout><InvoiceView /></Layout>
                   </ProtectedRoute>
                 }
               />
