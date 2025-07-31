@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useParams, Link } from 'react-router-dom';
-import { Plus, Trash2, Save, Eye, Download, Calendar, DollarSign, Building2, Palette, Mail } from 'lucide-react';
+import { Plus, Trash2, Save, Eye, Download, Calendar, DollarSign, Palette, Mail } from 'lucide-react';
 import { Invoice, InvoiceItem, BusinessProfile } from '../../types';
 import { storageUtils } from '../../utils/storage';
 import { generateInvoiceNumber, calculateInvoiceTotals } from '../../utils/invoiceHelpers';
@@ -397,7 +397,7 @@ const InvoiceCreator: React.FC = () => {
                   ))}
                 </select>
                 <Link
-                  to="/profile"
+                  to="/business-profile"
                   className="inline-flex items-center px-4 py-2 border border-blue-600 text-blue-700 font-semibold rounded-lg shadow-sm hover:bg-blue-50 transition-colors"
                 >
                   <Plus className="h-4 w-4 mr-2" />

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { FileText, Settings, User, BarChart3, Plus, Menu, X } from 'lucide-react';
+import { FileText, Settings, BarChart3, Plus, Menu, X, Building2 } from 'lucide-react';
 
 const Header: React.FC = () => {
   const location = useLocation();
@@ -13,7 +13,7 @@ const Header: React.FC = () => {
   const navigation = [
     { name: 'Dashboard', href: '/dashboard', icon: BarChart3 },
     { name: 'New Invoice', href: '/create', icon: Plus },
-    { name: 'Profile', href: '/profile', icon: User },
+    { name: 'BusinessInfo', href: '/business-profile', icon: Building2 },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

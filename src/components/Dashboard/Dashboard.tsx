@@ -1,15 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
-import { Plus, FileText, DollarSign, Users, TrendingUp, Eye, Edit, Trash2, Search, Filter, Calendar } from 'lucide-react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Plus, LogOut, FileText, DollarSign, Users, TrendingUp, Eye, Edit, Trash2, Search, Filter, Calendar } from 'lucide-react';
 import { Invoice } from '../../types';
 import { storageUtils } from '../../utils/storage';
 import { formatCurrency, getStatusColor, getStatusIcon } from '../../utils/invoiceHelpers';
 import { format } from 'date-fns';
 import SEO from '../SEO';
 import { useCurrency } from '../../context/CurrencyContext';
+import { useAuth } from '../../context/AuthContext'; 
 
 const Dashboard: React.FC = () => {
   const { currency } = useCurrency();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
@@ -22,6 +25,10 @@ const Dashboard: React.FC = () => {
     overdueInvoices: 0,
     draftInvoices: 0,
   });
+    const handleLogout = async () => {
+    await logout();
+    navigate('/login');
+  };
 
   useEffect(() => {
     const loadInvoices = () => {
@@ -135,10 +142,10 @@ const Dashboard: React.FC = () => {
               <div>
                 <h1 className="text-3xl font-bold text-gray-900 mb-2">Dashboard</h1>
                 <p className="text-gray-600">
-                  Welcome back! Here's an overview of your invoice activity
+                  {`Welcome back${user?.email ? ", " + user.email : ''}! Here's an overview of your invoice activity`}
                 </p>
               </div>
-              <div className="mt-6 lg:mt-0">
+              <div className="mt-6 lg:mt-0 flex items-center gap-4">
                 <Link
                   to="/create"
                   className="inline-flex items-center px-6 py-3 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
@@ -146,6 +153,14 @@ const Dashboard: React.FC = () => {
                   <Plus className="h-4 w-4 mr-2" />
                   Create Invoice
                 </Link>
+                <button
+                  onClick={handleLogout}
+                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-lg shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors"
+                  title="Log out"
+                >
+                  <LogOut className="h-4 w-4 mr-2" />
+                  Log out
+                </button>
               </div>
             </div>
           </div>
@@ -153,6 +168,7 @@ const Dashboard: React.FC = () => {
           {/* Enhanced Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <StatCard
+            
               title="Total Invoices"
               value={stats.totalInvoices}
               icon={FileText}
