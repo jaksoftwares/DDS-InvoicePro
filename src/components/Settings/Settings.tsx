@@ -127,8 +127,8 @@ const Settings: React.FC = () => {
         <div className="bg-white rounded-xl shadow-lg p-6">
           <h2 className="text-2xl font-bold mb-4">User Profile</h2>
           {user ? (
-            <div>
-              <div className="mb-2"><strong>Name:</strong> {user.displayName ?? user.email ?? 'N/A'}</div>
+            <div className="space-y-2">
+              <div className="mb-2"><strong>Name:</strong> {user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'N/A'}</div>
               <div className="mb-2"><strong>Email:</strong> {user.email}</div>
             </div>
           ) : (

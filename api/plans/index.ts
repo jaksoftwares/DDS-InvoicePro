@@ -3,7 +3,17 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+interface PlanRow {
+  id: string;
+  name: string;
+  description: string | null;
+  price_cents: number;
+  currency: string;
+  interval: string;
+  features: Record<string, unknown> | null;
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse): Promise<VercelResponse> {
   if (req.method !== 'GET') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
@@ -18,7 +28,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Failed to fetch plans' });
   }
 
-  const plans = data.map((plan: any) => ({
+  const plans = (data as PlanRow[]).map((plan) => ({
     id: plan.id,
     name: plan.name,
     description: plan.description,

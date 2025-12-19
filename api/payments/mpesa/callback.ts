@@ -3,15 +3,37 @@
 import { VercelRequest, VercelResponse } from '@vercel/node';
 import { supabaseAdmin } from '../../lib/supabaseAdmin.js';
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+interface MpesaCallbackItem {
+  Name: string;
+  Value?: string | number;
+}
+
+interface MpesaStkCallback {
+  MerchantRequestID: string;
+  CheckoutRequestID: string;
+  ResultCode: number;
+  ResultDesc: string;
+  CallbackMetadata?: {
+    Item: MpesaCallbackItem[];
+  };
+}
+
+interface MpesaCallbackBody {
+  Body: {
+    stkCallback: MpesaStkCallback;
+  };
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse): Promise<VercelResponse> {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  console.log('M-Pesa callback received:', JSON.stringify(req.body, null, 2));
+  const body = req.body as MpesaCallbackBody;
+  console.log('M-Pesa callback received:', JSON.stringify(body, null, 2));
 
   try {
-    const { Body } = req.body;
+    const { Body } = body;
     
     if (!Body || !Body.stkCallback) {
       return res.status(400).json({ ResultCode: 1, ResultDesc: 'Invalid callback format' });
@@ -142,7 +164,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 }
 
-function getMetadataValue(items: any[], name: string): any {
-  const item = items.find((i: any) => i.Name === name);
+function getMetadataValue(items: MpesaCallbackItem[], name: string): string | number | undefined {
+  const item = items.find((i) => i.Name === name);
   return item?.Value;
 }
