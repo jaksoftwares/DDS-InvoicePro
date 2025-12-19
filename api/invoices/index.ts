@@ -1,6 +1,11 @@
 // api/invoices/index.ts
-// GET: List all invoices for the authenticated user (with optional filters)
-// POST: Create a new invoice with items
+// Handles all CRUD operations for invoices.
+// GET /api/invoices -> list all invoices
+// POST /api/invoices -> create a new invoice
+// GET /api/invoices?id={id} -> get a single invoice
+// PUT /api/invoices?id={id} -> update an invoice
+// DELETE /api/invoices?id={id} -> delete an invoice
+
 import { VercelResponse } from '@vercel/node';
 import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware.js';
 import { supabaseAdmin } from '../lib/supabaseAdmin.js';
@@ -39,8 +44,11 @@ interface InvoiceCreateBody {
   items?: InvoiceItemInput[];
 }
 
+interface InvoiceUpdateBody extends InvoiceCreateBody {}
+
 interface InvoiceRow {
   id: string;
+  user_id: string;
   invoice_number: string;
   business_profile_id: string;
   client_name: string;
@@ -73,12 +81,55 @@ interface InvoiceRow {
     rate: number;
     amount: number;
   }> | null;
+  business_profiles: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    zip_code: string | null;
+    country: string | null;
+    website: string | null;
+    logo_url: string | null;
+    tax_number: string | null;
+    created_at: string;
+    updated_at: string;
+  } | null;
 }
 
-async function handler(req: AuthenticatedRequest, res: VercelResponse): Promise<VercelResponse> {
+async function handler(req: AuthenticatedRequest, res: VercelResponse) {
   const userId = req.userId!;
+  const { id } = req.query;
 
-  if (req.method === 'GET') {
+  if (id) {
+    if (typeof id !== 'string') {
+      return res.status(400).json({ error: 'Invalid invoice ID' });
+    }
+    switch (req.method) {
+      case 'GET':
+        return await getInvoice(req, res, userId, id);
+      case 'PUT':
+        return await updateInvoice(req, res, userId, id);
+      case 'DELETE':
+        return await deleteInvoice(req, res, userId, id);
+      default:
+        return res.status(405).json({ error: 'Method not allowed for this resource' });
+    }
+  } else {
+    switch (req.method) {
+      case 'GET':
+        return await listInvoices(req, res, userId);
+      case 'POST':
+        return await createInvoice(req, res, userId);
+      default:
+        return res.status(405).json({ error: 'Method not allowed for this resource' });
+    }
+  }
+}
+
+async function listInvoices(req: AuthenticatedRequest, res: VercelResponse, userId: string) {
     const { status, search } = req.query;
 
     let query = supabaseAdmin
@@ -100,7 +151,6 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse): Promise<
 
     let invoices = (data as InvoiceRow[]).map(transformInvoiceToFrontend);
 
-    // Client-side search filter (for simplicity)
     if (search && typeof search === 'string') {
       const searchLower = search.toLowerCase();
       invoices = invoices.filter(
@@ -112,12 +162,11 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse): Promise<
     }
 
     return res.status(200).json({ invoices });
-  }
+}
 
-  if (req.method === 'POST') {
+async function createInvoice(req: AuthenticatedRequest, res: VercelResponse, userId: string) {
     const body = req.body as InvoiceCreateBody;
 
-    // Insert invoice
     const { data: invoice, error: invoiceError } = await supabaseAdmin
       .from('invoices')
       .insert({
@@ -154,7 +203,6 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse): Promise<
       return res.status(500).json({ error: 'Failed to create invoice' });
     }
 
-    // Insert invoice items
     if (body.items && body.items.length > 0) {
       const itemsToInsert = body.items.map((item) => ({
         invoice_id: invoice.id,
@@ -170,11 +218,9 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse): Promise<
 
       if (itemsError) {
         console.error('Error creating invoice items:', itemsError);
-        // Invoice created but items failed - still return invoice
       }
     }
 
-    // Fetch the complete invoice with items
     const { data: completeInvoice } = await supabaseAdmin
       .from('invoices')
       .select('*, invoice_items(*)')
@@ -182,9 +228,93 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse): Promise<
       .single();
 
     return res.status(201).json({ invoice: transformInvoiceToFrontend((completeInvoice || invoice) as InvoiceRow) });
-  }
+}
 
-  return res.status(405).json({ error: 'Method not allowed' });
+async function getInvoice(req: AuthenticatedRequest, res: VercelResponse, userId: string, id: string) {
+    const { data, error } = await supabaseAdmin
+      .from('invoices')
+      .select('*, invoice_items(*), business_profiles(*)')
+      .eq('id', id)
+      .eq('user_id', userId)
+      .single();
+
+    if (error || !data) {
+      return res.status(404).json({ error: 'Invoice not found' });
+    }
+
+    return res.status(200).json({ invoice: transformInvoiceToFrontend(data as InvoiceRow) });
+}
+
+async function updateInvoice(req: AuthenticatedRequest, res: VercelResponse, userId: string, id: string) {
+    const body = req.body as InvoiceUpdateBody;
+
+    const updateData: Record<string, any> = { updated_at: new Date().toISOString() };
+    
+    Object.keys(body).forEach(key => {
+        if (key !== 'items') {
+            const snakeKey = key.replace(/[A-Z]/g, letter => `_${letter.toLowerCase()}`);
+            updateData[snakeKey] = (body as any)[key];
+        }
+    });
+
+
+    const { error: updateError } = await supabaseAdmin
+      .from('invoices')
+      .update(updateData)
+      .eq('id', id)
+      .eq('user_id', userId);
+
+    if (updateError) {
+      console.error('Error updating invoice:', updateError);
+      return res.status(500).json({ error: 'Failed to update invoice' });
+    }
+
+    if (body.items !== undefined) {
+      await supabaseAdmin
+        .from('invoice_items')
+        .delete()
+        .eq('invoice_id', id);
+
+      if (body.items.length > 0) {
+        const itemsToInsert = body.items.map((item) => ({
+          invoice_id: id,
+          description: item.description,
+          quantity: item.quantity || 1,
+          rate: item.rate || 0,
+          amount: item.amount || 0,
+        }));
+
+        await supabaseAdmin.from('invoice_items').insert(itemsToInsert);
+      }
+    }
+
+    const { data: updatedInvoice } = await supabaseAdmin
+      .from('invoices')
+      .select('*, invoice_items(*)')
+      .eq('id', id)
+      .single();
+
+    return res.status(200).json({ invoice: transformInvoiceToFrontend(updatedInvoice as InvoiceRow) });
+}
+
+async function deleteInvoice(req: AuthenticatedRequest, res: VercelResponse, userId: string, id: string) {
+    await supabaseAdmin
+        .from('invoice_items')
+        .delete()
+        .eq('invoice_id', id);
+
+    const { error } = await supabaseAdmin
+      .from('invoices')
+      .delete()
+      .eq('id', id)
+      .eq('user_id', userId);
+
+    if (error) {
+      console.error('Error deleting invoice:', error);
+      return res.status(500).json({ error: 'Failed to delete invoice' });
+    }
+
+    return res.status(200).json({ success: true });
 }
 
 function transformInvoiceToFrontend(row: InvoiceRow) {
@@ -196,10 +326,33 @@ function transformInvoiceToFrontend(row: InvoiceRow) {
     amount: Number(item.amount),
   }));
 
+  let businessProfile = undefined;
+  if (row.business_profiles) {
+    const bp = row.business_profiles;
+    businessProfile = {
+      id: bp.id,
+      name: bp.name,
+      email: bp.email,
+      phone: bp.phone || '',
+      address: bp.address || '',
+      city: bp.city || '',
+      state: bp.state || '',
+      zipCode: bp.zip_code || '',
+      country: bp.country || '',
+      website: bp.website || '',
+      logoUrl: bp.logo_url || '',
+      logo: bp.logo_url || '',
+      taxNumber: bp.tax_number || '',
+      createdAt: bp.created_at,
+      updatedAt: bp.updated_at,
+    };
+  }
+
   return {
     id: row.id,
     invoiceNumber: row.invoice_number,
     businessProfileId: row.business_profile_id,
+    businessProfile,
     clientName: row.client_name,
     clientEmail: row.client_email,
     clientPhone: row.client_phone || '',

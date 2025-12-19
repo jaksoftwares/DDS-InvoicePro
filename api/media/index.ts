@@ -1,9 +1,16 @@
 // api/media/index.ts
 // GET: List user's media assets
 // POST: Store Cloudinary upload metadata after successful upload
+// POST with ?action=sign-upload: Generate Cloudinary upload signature
 import { VercelResponse } from '@vercel/node';
 import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware.js';
 import { supabaseAdmin } from '../lib/supabaseAdmin.js';
+import crypto from 'crypto';
+
+const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || '';
+const CLOUDINARY_API_KEY = process.env.CLOUDINARY_API_KEY || '';
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || process.env.VITE_CLOUDINARY_CLOUD_NAME || '';
+
 
 interface MediaCreateBody {
   publicId: string;
@@ -33,8 +40,23 @@ interface MediaAssetRow {
 
 async function handler(req: AuthenticatedRequest, res: VercelResponse): Promise<VercelResponse> {
   const userId = req.userId!;
+  const { action } = req.query;
 
-  if (req.method === 'GET') {
+  if (req.method === 'POST' && action === 'sign-upload') {
+    return await signUpload(req, res, userId);
+  }
+
+  switch (req.method) {
+    case 'GET':
+      return await listMedia(req, res, userId);
+    case 'POST':
+      return await storeMedia(req, res, userId);
+    default:
+      return res.status(405).json({ error: 'Method not allowed' });
+  }
+}
+
+async function listMedia(req: AuthenticatedRequest, res: VercelResponse, userId: string) {
     const { data, error } = await supabaseAdmin
       .from('media_assets')
       .select('*')
@@ -61,9 +83,9 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse): Promise<
     }));
 
     return res.status(200).json({ media });
-  }
+}
 
-  if (req.method === 'POST') {
+async function storeMedia(req: AuthenticatedRequest, res: VercelResponse, userId: string) {
     const body = req.body as MediaCreateBody;
 
     if (!body.publicId || !body.url) {
@@ -109,9 +131,47 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse): Promise<
         createdAt: row.created_at,
       },
     });
+}
+
+async function signUpload(req: AuthenticatedRequest, res: VercelResponse, userId: string) {
+    const { folder = 'invoicepro', resourceType = 'image' } = req.body;
+
+  if (!CLOUDINARY_API_SECRET || !CLOUDINARY_API_KEY || !CLOUDINARY_CLOUD_NAME) {
+    return res.status(500).json({ error: 'Cloudinary not configured' });
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+  try {
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    const folderPath = `${folder}/${userId.substring(0, 8)}`;
+
+    const paramsToSign = {
+      folder: folderPath,
+      timestamp,
+    };
+
+    const sortedParams = Object.keys(paramsToSign)
+      .sort()
+      .map(key => `${key}=${paramsToSign[key as keyof typeof paramsToSign]}`)
+      .join('&');
+
+    const signature = crypto
+      .createHash('sha1')
+      .update(sortedParams + CLOUDINARY_API_SECRET)
+      .digest('hex');
+
+    return res.status(200).json({
+      cloudName: CLOUDINARY_CLOUD_NAME,
+      apiKey: CLOUDINARY_API_KEY,
+      timestamp,
+      signature,
+      folder: folderPath,
+      resourceType,
+    });
+
+  } catch (error) {
+    console.error('Error generating upload signature:', error);
+    return res.status(500).json({ error: 'Failed to generate upload signature' });
+  }
 }
 
 export default withAuth(handler);
