@@ -14,6 +14,7 @@ import Signup from './components/Auth/Signup';
 import Profile from './components/Auth/Profile';
 import ProtectedRoute from './components/Auth/ProtectedRoute';
 import ResetPassword from './components/Auth/ResetPassword';
+import UpdatePassword from './components/Auth/UpdatePassword';
 
 function App() {
   return (
@@ -26,6 +27,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/login/reset-password" element={<ResetPassword />} />
+              <Route path="/update-password" element={<UpdatePassword />} />
               <Route
                 path="/dashboard"
                 element={

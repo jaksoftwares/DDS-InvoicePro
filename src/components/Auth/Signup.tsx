@@ -18,7 +18,7 @@ const Signup = () => {
     setError('');
     setLoading(true);
     try {
-      await signup(email, password); // Optional: pass name to Firestore later
+      await signup(email, password);
       navigate('/dashboard');
     } catch (err: unknown) {
       if (err instanceof Error) {

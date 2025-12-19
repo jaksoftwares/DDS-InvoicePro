@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
-import { sendPasswordResetEmail } from 'firebase/auth';
-import { auth } from '../../lib/firebase';
 import { Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet-async';
+import { supabase } from '../../lib/supabase';
 
 const ResetPassword = () => {
   const [email, setEmail] = useState('');
@@ -16,7 +15,10 @@ const ResetPassword = () => {
     setMessage('');
     setLoading(true);
     try {
-      await sendPasswordResetEmail(auth, email);
+      const redirectTo = `${window.location.origin}/update-password`;
+      const { error } = await supabase.auth.resetPasswordForEmail(email, { redirectTo });
+      if (error) throw error;
+
       setMessage('✅ Password reset email sent! Please check your inbox.');
     } catch (err: unknown) {
       if (err instanceof Error) {
