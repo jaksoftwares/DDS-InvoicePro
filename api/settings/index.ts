@@ -2,8 +2,8 @@
 // GET: Fetch user settings (creates default if none exist)
 // PUT: Update user settings
 import { VercelResponse } from '@vercel/node';
-import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware';
-import { supabaseAdmin } from '../lib/supabaseAdmin';
+import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware.js';
+import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 
 const DEFAULT_SETTINGS = {
   currency: 'USD',

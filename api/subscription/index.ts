@@ -1,8 +1,8 @@
 // api/subscription/index.ts
 // GET: Fetch current user's subscription
 import { VercelResponse } from '@vercel/node';
-import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware';
-import { supabaseAdmin } from '../lib/supabaseAdmin';
+import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware.js';
+import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 
 async function handler(req: AuthenticatedRequest, res: VercelResponse) {
   const userId = req.userId!;

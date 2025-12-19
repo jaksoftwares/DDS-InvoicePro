@@ -1,7 +1,7 @@
 // api/lib/authMiddleware.ts
 // Helper to extract and verify Supabase JWT from Authorization header
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { supabaseAdmin } from './supabaseAdmin';
+import { supabaseAdmin } from './supabaseAdmin.js';
 
 export interface AuthenticatedRequest extends VercelRequest {
   userId?: string;
@@ -9,7 +9,9 @@ export interface AuthenticatedRequest extends VercelRequest {
 }
 
 export const withAuth = (
-  handler: (req: AuthenticatedRequest, res: VercelResponse) => Promise<void> | void
+  // Vercel handlers frequently `return res.status(...).json(...)`.
+  // That return type is `VercelResponse`, not `void`, so allow any return value.
+  handler: (req: AuthenticatedRequest, res: VercelResponse) => unknown | Promise<unknown>
 ) => {
   return async (req: AuthenticatedRequest, res: VercelResponse) => {
     const authHeader = req.headers.authorization;

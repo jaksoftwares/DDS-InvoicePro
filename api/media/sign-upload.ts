@@ -1,7 +1,7 @@
 // api/media/sign-upload.ts
 // POST: Generate Cloudinary upload signature for secure uploads
 import { VercelResponse } from '@vercel/node';
-import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware';
+import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware.js';
 import crypto from 'crypto';
 
 const CLOUDINARY_API_SECRET = process.env.CLOUDINARY_API_SECRET || '';

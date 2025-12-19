@@ -2,10 +2,36 @@
 // GET: List user's media assets
 // POST: Store Cloudinary upload metadata after successful upload
 import { VercelResponse } from '@vercel/node';
-import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware';
-import { supabaseAdmin } from '../lib/supabaseAdmin';
+import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware.js';
+import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 
-async function handler(req: AuthenticatedRequest, res: VercelResponse) {
+interface MediaCreateBody {
+  publicId: string;
+  url: string;
+  format?: string;
+  resourceType?: string;
+  bytes?: number;
+  width?: number;
+  height?: number;
+  businessProfileId?: string;
+  invoiceId?: string;
+}
+
+interface MediaAssetRow {
+  id: string;
+  public_id: string;
+  url: string;
+  format: string | null;
+  resource_type: string;
+  bytes: number | null;
+  width: number | null;
+  height: number | null;
+  business_profile_id: string | null;
+  invoice_id: string | null;
+  created_at: string;
+}
+
+async function handler(req: AuthenticatedRequest, res: VercelResponse): Promise<VercelResponse> {
   const userId = req.userId!;
 
   if (req.method === 'GET') {
@@ -20,7 +46,7 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'Failed to fetch media' });
     }
 
-    const media = data.map((m: any) => ({
+    const media = (data as MediaAssetRow[]).map((m) => ({
       id: m.id,
       publicId: m.public_id,
       url: m.url,
@@ -38,7 +64,7 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse) {
   }
 
   if (req.method === 'POST') {
-    const body = req.body;
+    const body = req.body as MediaCreateBody;
 
     if (!body.publicId || !body.url) {
       return res.status(400).json({ error: 'Missing publicId or url' });
@@ -66,19 +92,21 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'Failed to store media' });
     }
 
+    const row = data as MediaAssetRow;
+
     return res.status(201).json({
       media: {
-        id: data.id,
-        publicId: data.public_id,
-        url: data.url,
-        format: data.format,
-        resourceType: data.resource_type,
-        bytes: data.bytes,
-        width: data.width,
-        height: data.height,
-        businessProfileId: data.business_profile_id,
-        invoiceId: data.invoice_id,
-        createdAt: data.created_at,
+        id: row.id,
+        publicId: row.public_id,
+        url: row.url,
+        format: row.format,
+        resourceType: row.resource_type,
+        bytes: row.bytes,
+        width: row.width,
+        height: row.height,
+        businessProfileId: row.business_profile_id,
+        invoiceId: row.invoice_id,
+        createdAt: row.created_at,
       },
     });
   }

@@ -2,10 +2,80 @@
 // GET: List all invoices for the authenticated user (with optional filters)
 // POST: Create a new invoice with items
 import { VercelResponse } from '@vercel/node';
-import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware';
-import { supabaseAdmin } from '../lib/supabaseAdmin';
+import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware.js';
+import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 
-async function handler(req: AuthenticatedRequest, res: VercelResponse) {
+interface InvoiceItemInput {
+  description: string;
+  quantity?: number;
+  rate?: number;
+  amount?: number;
+}
+
+interface InvoiceCreateBody {
+  businessProfileId: string;
+  invoiceNumber: string;
+  clientName: string;
+  clientEmail: string;
+  clientPhone?: string;
+  clientAddress?: string;
+  clientCity?: string;
+  clientState?: string;
+  clientZipCode?: string;
+  clientCountry?: string;
+  subtotal?: number;
+  taxRate?: number;
+  taxAmount?: number;
+  discountRate?: number;
+  discountAmount?: number;
+  total?: number;
+  notes?: string;
+  terms?: string;
+  dueDate?: string;
+  issueDate?: string;
+  status?: string;
+  template?: string;
+  currency?: string;
+  items?: InvoiceItemInput[];
+}
+
+interface InvoiceRow {
+  id: string;
+  invoice_number: string;
+  business_profile_id: string;
+  client_name: string;
+  client_email: string;
+  client_phone: string | null;
+  client_address: string | null;
+  client_city: string | null;
+  client_state: string | null;
+  client_zip_code: string | null;
+  client_country: string | null;
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  discount_rate: number;
+  discount_amount: number;
+  total: number;
+  notes: string | null;
+  terms: string | null;
+  due_date: string | null;
+  issue_date: string | null;
+  status: string;
+  template: string | null;
+  currency: string | null;
+  created_at: string;
+  updated_at: string;
+  invoice_items: Array<{
+    id: string;
+    description: string;
+    quantity: number;
+    rate: number;
+    amount: number;
+  }> | null;
+}
+
+async function handler(req: AuthenticatedRequest, res: VercelResponse): Promise<VercelResponse> {
   const userId = req.userId!;
 
   if (req.method === 'GET') {
@@ -28,13 +98,13 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse) {
       return res.status(500).json({ error: 'Failed to fetch invoices' });
     }
 
-    let invoices = data.map(transformInvoiceToFrontend);
+    let invoices = (data as InvoiceRow[]).map(transformInvoiceToFrontend);
 
     // Client-side search filter (for simplicity)
     if (search && typeof search === 'string') {
       const searchLower = search.toLowerCase();
       invoices = invoices.filter(
-        (inv: any) =>
+        (inv) =>
           inv.invoiceNumber.toLowerCase().includes(searchLower) ||
           inv.clientName.toLowerCase().includes(searchLower) ||
           inv.clientEmail.toLowerCase().includes(searchLower)
@@ -45,7 +115,7 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse) {
   }
 
   if (req.method === 'POST') {
-    const body = req.body;
+    const body = req.body as InvoiceCreateBody;
 
     // Insert invoice
     const { data: invoice, error: invoiceError } = await supabaseAdmin
@@ -86,7 +156,7 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse) {
 
     // Insert invoice items
     if (body.items && body.items.length > 0) {
-      const itemsToInsert = body.items.map((item: any) => ({
+      const itemsToInsert = body.items.map((item) => ({
         invoice_id: invoice.id,
         description: item.description,
         quantity: item.quantity || 1,
@@ -111,14 +181,14 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse) {
       .eq('id', invoice.id)
       .single();
 
-    return res.status(201).json({ invoice: transformInvoiceToFrontend(completeInvoice || invoice) });
+    return res.status(201).json({ invoice: transformInvoiceToFrontend((completeInvoice || invoice) as InvoiceRow) });
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
 }
 
-function transformInvoiceToFrontend(row: any) {
-  const items = (row.invoice_items || []).map((item: any) => ({
+function transformInvoiceToFrontend(row: InvoiceRow) {
+  const items = (row.invoice_items || []).map((item) => ({
     id: item.id,
     description: item.description,
     quantity: Number(item.quantity),

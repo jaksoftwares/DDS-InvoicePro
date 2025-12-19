@@ -3,10 +3,96 @@
 // PUT: Update an invoice and its items
 // DELETE: Delete an invoice
 import { VercelResponse } from '@vercel/node';
-import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware';
-import { supabaseAdmin } from '../lib/supabaseAdmin';
+import { withAuth, AuthenticatedRequest } from '../lib/authMiddleware.js';
+import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 
-async function handler(req: AuthenticatedRequest, res: VercelResponse) {
+interface InvoiceItemInput {
+  description: string;
+  quantity?: number;
+  rate?: number;
+  amount?: number;
+}
+
+interface InvoiceUpdateBody {
+  businessProfileId?: string;
+  invoiceNumber?: string;
+  clientName?: string;
+  clientEmail?: string;
+  clientPhone?: string;
+  clientAddress?: string;
+  clientCity?: string;
+  clientState?: string;
+  clientZipCode?: string;
+  clientCountry?: string;
+  subtotal?: number;
+  taxRate?: number;
+  taxAmount?: number;
+  discountRate?: number;
+  discountAmount?: number;
+  total?: number;
+  notes?: string;
+  terms?: string;
+  dueDate?: string;
+  issueDate?: string;
+  status?: string;
+  template?: string;
+  currency?: string;
+  items?: InvoiceItemInput[];
+}
+
+interface InvoiceRow {
+  id: string;
+  invoice_number: string;
+  business_profile_id: string;
+  client_name: string;
+  client_email: string;
+  client_phone: string | null;
+  client_address: string | null;
+  client_city: string | null;
+  client_state: string | null;
+  client_zip_code: string | null;
+  client_country: string | null;
+  subtotal: number;
+  tax_rate: number;
+  tax_amount: number;
+  discount_rate: number;
+  discount_amount: number;
+  total: number;
+  notes: string | null;
+  terms: string | null;
+  due_date: string | null;
+  issue_date: string | null;
+  status: string;
+  template: string | null;
+  currency: string | null;
+  created_at: string;
+  updated_at: string;
+  invoice_items: Array<{
+    id: string;
+    description: string;
+    quantity: number;
+    rate: number;
+    amount: number;
+  }> | null;
+  business_profiles: {
+    id: string;
+    name: string;
+    email: string;
+    phone: string | null;
+    address: string | null;
+    city: string | null;
+    state: string | null;
+    zip_code: string | null;
+    country: string | null;
+    website: string | null;
+    logo_url: string | null;
+    tax_number: string | null;
+    created_at: string;
+    updated_at: string;
+  } | null;
+}
+
+async function handler(req: AuthenticatedRequest, res: VercelResponse): Promise<VercelResponse> {
   const userId = req.userId!;
   const { id } = req.query;
 
@@ -26,14 +112,14 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse) {
       return res.status(404).json({ error: 'Invoice not found' });
     }
 
-    return res.status(200).json({ invoice: transformInvoiceToFrontend(data) });
+    return res.status(200).json({ invoice: transformInvoiceToFrontend(data as InvoiceRow) });
   }
 
   if (req.method === 'PUT') {
-    const body = req.body;
+    const body = req.body as InvoiceUpdateBody;
 
     // Update invoice fields
-    const updateData: any = { updated_at: new Date().toISOString() };
+    const updateData: Record<string, string | number | undefined> = { updated_at: new Date().toISOString() };
     
     if (body.businessProfileId !== undefined) updateData.business_profile_id = body.businessProfileId;
     if (body.invoiceNumber !== undefined) updateData.invoice_number = body.invoiceNumber;
@@ -80,7 +166,7 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse) {
 
       // Insert new items
       if (body.items.length > 0) {
-        const itemsToInsert = body.items.map((item: any) => ({
+        const itemsToInsert = body.items.map((item) => ({
           invoice_id: id,
           description: item.description,
           quantity: item.quantity || 1,
@@ -99,7 +185,7 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse) {
       .eq('id', id)
       .single();
 
-    return res.status(200).json({ invoice: transformInvoiceToFrontend(updatedInvoice) });
+    return res.status(200).json({ invoice: transformInvoiceToFrontend(updatedInvoice as InvoiceRow) });
   }
 
   if (req.method === 'DELETE') {
@@ -120,8 +206,8 @@ async function handler(req: AuthenticatedRequest, res: VercelResponse) {
   return res.status(405).json({ error: 'Method not allowed' });
 }
 
-function transformInvoiceToFrontend(row: any) {
-  const items = (row.invoice_items || []).map((item: any) => ({
+function transformInvoiceToFrontend(row: InvoiceRow) {
+  const items = (row.invoice_items || []).map((item) => ({
     id: item.id,
     description: item.description,
     quantity: Number(item.quantity),

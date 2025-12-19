@@ -1,7 +1,7 @@
 // api/plans/index.ts
 // GET: List all subscription plans (public endpoint)
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { supabaseAdmin } from '../lib/supabaseAdmin';
+import { supabaseAdmin } from '../lib/supabaseAdmin.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'GET') {

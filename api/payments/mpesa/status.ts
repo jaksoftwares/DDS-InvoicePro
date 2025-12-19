@@ -1,8 +1,8 @@
 // api/payments/mpesa/status.ts
 // POST: Check the status of an STK Push transaction
 import { VercelResponse } from '@vercel/node';
-import { withAuth, AuthenticatedRequest } from '../../lib/authMiddleware';
-import { supabaseAdmin } from '../../lib/supabaseAdmin';
+import { withAuth, AuthenticatedRequest } from '../../lib/authMiddleware.js';
+import { supabaseAdmin } from '../../lib/supabaseAdmin.js';
 
 const MPESA_BASE_URL = process.env.MPESA_BASE_URL || 'https://sandbox.safaricom.co.ke';
 const MPESA_CONSUMER_KEY = process.env.MPESA_CONSUMER_KEY || '';

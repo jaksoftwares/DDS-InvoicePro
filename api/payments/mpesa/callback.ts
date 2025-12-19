@@ -1,7 +1,7 @@
 // api/payments/mpesa/callback.ts
 // POST: Receive M-Pesa STK Push callback from Safaricom
 import { VercelRequest, VercelResponse } from '@vercel/node';
-import { supabaseAdmin } from '../../lib/supabaseAdmin';
+import { supabaseAdmin } from '../../lib/supabaseAdmin.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method !== 'POST') {
