@@ -10,11 +10,11 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.89.0",
     "@vercel/node": "^5.3.7",
     "bcryptjs": "^3.0.2",
     "date-fns": "^3.6.0",
     "emailjs-com": "^3.2.0",
-    "firebase": "^12.0.0",
     "html2canvas": "^1.4.1",
     "jsonwebtoken": "^9.0.2",
     "jspdf": "^2.5.1",
